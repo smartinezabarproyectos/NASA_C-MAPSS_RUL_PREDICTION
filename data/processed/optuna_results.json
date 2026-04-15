@@ -1,0 +1,306 @@
+{
+  "lstm_FD001": {
+    "best_rmse": 12.53573969722972,
+    "best_params": {
+      "hidden_size": 192,
+      "num_layers": 3,
+      "dropout": 0.25,
+      "lr": 0.00017923384499941508,
+      "weight_decay": 0.00044228119636054234,
+      "batch_size": 32
+    }
+  },
+  "gru_FD001": {
+    "best_rmse": 12.21517767911596,
+    "best_params": {
+      "hidden_size": 128,
+      "num_layers": 3,
+      "dropout": 0.4,
+      "lr": 0.0044106771579938715,
+      "weight_decay": 7.579756671974912e-05,
+      "batch_size": 32
+    }
+  },
+  "tcn_FD001": {
+    "best_rmse": 11.650385263734087,
+    "best_params": {
+      "hidden_size": 192,
+      "num_layers": 3,
+      "dropout": 0.30000000000000004,
+      "lr": 0.00025963011601906063,
+      "weight_decay": 7.681313671833259e-05,
+      "batch_size": 128
+    }
+  },
+  "transformer_FD001": {
+    "best_rmse": 11.842809286840076,
+    "best_params": {
+      "hidden_size": 192,
+      "num_layers": 1,
+      "dropout": 0.30000000000000004,
+      "lr": 0.0002898239716775429,
+      "weight_decay": 0.0001595655327096281,
+      "batch_size": 64,
+      "d_model": 128,
+      "nhead": 2
+    }
+  },
+  "lstm_FD002": {
+    "best_rmse": 10.76309389108323,
+    "best_params": {
+      "hidden_size": 64,
+      "num_layers": 1,
+      "dropout": 0.2,
+      "lr": 0.002944227020060717,
+      "weight_decay": 0.00018379666359595058,
+      "batch_size": 32
+    }
+  },
+  "gru_FD002": {
+    "best_rmse": 11.235266766801118,
+    "best_params": {
+      "hidden_size": 64,
+      "num_layers": 3,
+      "dropout": 0.45,
+      "lr": 0.0002640133605265578,
+      "weight_decay": 0.00012325397062393434,
+      "batch_size": 32
+    }
+  },
+  "tcn_FD002": {
+    "best_rmse": 13.95570736313577,
+    "best_params": {
+      "hidden_size": 64,
+      "num_layers": 3,
+      "dropout": 0.5,
+      "lr": 0.004227580551172355,
+      "weight_decay": 1.5652280436045966e-05,
+      "batch_size": 32
+    }
+  },
+  "transformer_FD002": {
+    "best_rmse": 11.88080550349455,
+    "best_params": {
+      "hidden_size": 256,
+      "num_layers": 2,
+      "dropout": 0.30000000000000004,
+      "lr": 0.001080391661406,
+      "weight_decay": 5.5672995132509557e-05,
+      "batch_size": 64,
+      "d_model": 32,
+      "nhead": 2
+    }
+  },
+  "lstm_FD003": {
+    "best_rmse": 12.32290739625712,
+    "best_params": {
+      "hidden_size": 192,
+      "num_layers": 2,
+      "dropout": 0.4,
+      "lr": 0.003343674169071124,
+      "weight_decay": 0.00013672175092731818,
+      "batch_size": 32
+    }
+  },
+  "gru_FD003": {
+    "best_rmse": 12.249874930149002,
+    "best_params": {
+      "hidden_size": 128,
+      "num_layers": 2,
+      "dropout": 0.30000000000000004,
+      "lr": 0.002934384366941891,
+      "weight_decay": 2.4869644268195842e-05,
+      "batch_size": 64
+    }
+  },
+  "tcn_FD003": {
+    "best_rmse": 15.171431566540909,
+    "best_params": {
+      "hidden_size": 128,
+      "num_layers": 1,
+      "dropout": 0.5,
+      "lr": 0.0010671630094142666,
+      "weight_decay": 1.1463476225107282e-05,
+      "batch_size": 32
+    }
+  },
+  "transformer_FD003": {
+    "best_rmse": 12.578381646547617,
+    "best_params": {
+      "hidden_size": 64,
+      "num_layers": 3,
+      "dropout": 0.25,
+      "lr": 0.002700566883455399,
+      "weight_decay": 3.2384083515524554e-05,
+      "batch_size": 64,
+      "d_model": 32,
+      "nhead": 2
+    }
+  },
+  "lstm_FD004": {
+    "best_rmse": 16.06972731791472,
+    "best_params": {
+      "hidden_size": 128,
+      "num_layers": 1,
+      "dropout": 0.25,
+      "lr": 0.0011730094283132389,
+      "weight_decay": 2.4154071594985084e-05,
+      "batch_size": 32
+    }
+  },
+  "gru_FD004": {
+    "best_rmse": 15.673600287124081,
+    "best_params": {
+      "hidden_size": 192,
+      "num_layers": 1,
+      "dropout": 0.5,
+      "lr": 0.0008833230360997906,
+      "weight_decay": 0.00028604533294673666,
+      "batch_size": 128
+    }
+  },
+  "tcn_FD004": {
+    "best_rmse": 19.667657110153808,
+    "best_params": {
+      "hidden_size": 128,
+      "num_layers": 2,
+      "dropout": 0.25,
+      "lr": 0.00011041804488476341,
+      "weight_decay": 0.0008747461708385426,
+      "batch_size": 64
+    }
+  },
+  "transformer_FD004": {
+    "best_rmse": 16.25445338306018,
+    "best_params": {
+      "hidden_size": 64,
+      "num_layers": 3,
+      "dropout": 0.25,
+      "lr": 0.000591088773045043,
+      "weight_decay": 0.00015110355163675608,
+      "batch_size": 64,
+      "d_model": 32,
+      "nhead": 4
+    }
+  },
+  "result_lstm_FD001": {
+    "rmse": 14.23545989731195,
+    "mae": 10.18381780842581,
+    "r2": 0.873016729596521,
+    "nasa_score": 5946.708045336994
+  },
+  "result_gru_FD001": {
+    "rmse": 14.894803584270885,
+    "mae": 10.672990851612933,
+    "r2": 0.8609813506619026,
+    "nasa_score": 11007.32905243698
+  },
+  "result_tcn_FD001": {
+    "rmse": 14.387148419330224,
+    "mae": 10.708730108802577,
+    "r2": 0.870296124978843,
+    "nasa_score": 10374.52518774611
+  },
+  "result_transformer_FD001": {
+    "rmse": 13.1558789798443,
+    "mae": 9.972503863281036,
+    "r2": 0.8915465821622807,
+    "nasa_score": 6279.42762379894
+  },
+  "result_ensemble_FD001": {
+    "rmse": 11.970321298526216,
+    "mae": 8.969169444070165,
+    "r2": 0.9102126572865041,
+    "nasa_score": 4942.4123932813
+  },
+  "result_lstm_FD002": {
+    "rmse": 12.803830682114354,
+    "mae": 9.100378446385724,
+    "r2": 0.8920254600889141,
+    "nasa_score": 18951.393732988246
+  },
+  "result_gru_FD002": {
+    "rmse": 14.856358989350918,
+    "mae": 10.978860520172027,
+    "r2": 0.8546328460741164,
+    "nasa_score": 25015.26684936512
+  },
+  "result_tcn_FD002": {
+    "rmse": 13.43173468738442,
+    "mae": 9.988522395363951,
+    "r2": 0.8811755735092831,
+    "nasa_score": 21225.59237847356
+  },
+  "result_transformer_FD002": {
+    "rmse": 14.27830060436106,
+    "mae": 10.209393499851112,
+    "r2": 0.8657251860167424,
+    "nasa_score": 27054.729855705147
+  },
+  "result_ensemble_FD002": {
+    "rmse": 11.948728211110815,
+    "mae": 8.697777520084259,
+    "r2": 0.9059660060073818,
+    "nasa_score": 15098.65192392402
+  },
+  "result_lstm_FD003": {
+    "rmse": 15.559114810029456,
+    "mae": 10.388628874593378,
+    "r2": 0.8598535703219016,
+    "nasa_score": 13447.803717291592
+  },
+  "result_gru_FD003": {
+    "rmse": 13.714333140757212,
+    "mae": 9.288227347518934,
+    "r2": 0.8911166041454398,
+    "nasa_score": 10188.017391190624
+  },
+  "result_tcn_FD003": {
+    "rmse": 16.821448819282693,
+    "mae": 11.714678532327227,
+    "r2": 0.8361905076297909,
+    "nasa_score": 16840.29154430841
+  },
+  "result_transformer_FD003": {
+    "rmse": 13.341155456698273,
+    "mae": 8.917372633257639,
+    "r2": 0.8969615879727917,
+    "nasa_score": 11084.572327044894
+  },
+  "result_ensemble_FD003": {
+    "rmse": 13.462121215457469,
+    "mae": 9.47295506651063,
+    "r2": 0.8950845951559077,
+    "nasa_score": 9035.90977187988
+  },
+  "result_lstm_FD004": {
+    "rmse": 17.923260658591747,
+    "mae": 11.763242408836133,
+    "r2": 0.8236026216479246,
+    "nasa_score": 65523.78580117039
+  },
+  "result_gru_FD004": {
+    "rmse": 18.657261000994865,
+    "mae": 12.964174709515152,
+    "r2": 0.8088589978195388,
+    "nasa_score": 105695.81623500549
+  },
+  "result_tcn_FD004": {
+    "rmse": 21.481995388764318,
+    "mae": 14.618042049930663,
+    "r2": 0.7465995844523192,
+    "nasa_score": 146618.76628752012
+  },
+  "result_transformer_FD004": {
+    "rmse": 17.770823561939675,
+    "mae": 11.356827912749088,
+    "r2": 0.826590376753745,
+    "nasa_score": 196204.5766787447
+  },
+  "result_ensemble_FD004": {
+    "rmse": 17.315732006478257,
+    "mae": 11.800379019662934,
+    "r2": 0.8353583173236232,
+    "nasa_score": 58146.385540578965
+  }
+}
