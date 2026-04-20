@@ -1,4 +1,4 @@
-"""Métricas de evaluación: regresión, clasificación y NASA Score."""
+
 
 import numpy as np
 import pandas as pd
@@ -15,13 +15,6 @@ from sklearn.metrics import (
 
 
 def nasa_scoring_function(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    """NASA Scoring Function — penaliza más predicciones tardías.
-
-    s_i = exp(-d/13) - 1  si d < 0 (predicción temprana)
-    s_i = exp(d/10)  - 1  si d >= 0 (predicción tardía)
-
-    donde d = y_pred - y_true (error de predicción).
-    """
     d = y_pred - y_true
     scores = np.where(d < 0, np.exp(-d / 13) - 1, np.exp(d / 10) - 1)
     return float(scores.sum())

@@ -9,7 +9,7 @@ from src.config import RANDOM_STATE
 
 
 def get_regression_models() -> dict:
-    """Retorna diccionario con modelos de regresión configurados."""
+
     return {
         "linear_regression": LinearRegression(),
         "svr": SVR(kernel="rbf", C=100, epsilon=0.1),
@@ -33,7 +33,7 @@ def get_regression_models() -> dict:
 
 
 def get_classification_models() -> dict:
-    """Retorna diccionario con modelos de clasificación configurados."""
+
     return {
         "random_forest_clf": RandomForestClassifier(
             n_estimators=200,

@@ -12,11 +12,7 @@ from src.config import (
 
 
 def add_rul_column(df: pd.DataFrame) -> pd.DataFrame:
-    """Agrega la columna RUL al dataframe de entrenamiento.
 
-    Para cada motor, RUL = max_cycle - cycle_actual.
-    Se aplica clip en MAX_RUL (piece-wise linear degradation).
-    """
     df = df.copy()
     max_cycles = df.groupby("unit_id")["cycle"].transform("max")
     df["rul"] = (max_cycles - df["cycle"]).clip(upper=MAX_RUL)
@@ -24,14 +20,14 @@ def add_rul_column(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_binary_label(df: pd.DataFrame, w: int = CLASSIFICATION_W) -> pd.DataFrame:
-    """Agrega label binario: 1 si el motor falla en los próximos W ciclos."""
+
     df = df.copy()
     df["label"] = (df["rul"] <= w).astype(int)
     return df
 
 
 def drop_useless_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Elimina sensores constantes y settings de baja varianza."""
+
     cols_to_drop = [c for c in DROP_SENSORS + DROP_SETTINGS if c in df.columns]
     return df.drop(columns=cols_to_drop)
 
