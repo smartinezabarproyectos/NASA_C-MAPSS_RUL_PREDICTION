@@ -30,14 +30,12 @@ DROP_SETTINGS = ["op_setting_3"]
 
 USEFUL_SENSORS = [s for s in COLUMN_NAMES if s.startswith("sensor_") and s not in DROP_SENSORS]
 
-# ── Hiperparámetros generales ───────────────────────────────────────
 MAX_RUL = 125          # Clip del RUL máximo (piece-wise linear)
 WINDOW_SIZE = 30       # Ventana para rolling features
 CLASSIFICATION_W = 30  # Umbral para clasificación binaria (falla en W ciclos?)
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 
-# ── Sequence length para modelos Deep Learning ──────────────────────
 SEQUENCE_LENGTH = 80
 BATCH_SIZE = 64
 EPOCHS = 100

@@ -10,18 +10,6 @@ from src.visualization import save_fig
 
 
 def compute_shap_values(model, X: np.ndarray | pd.DataFrame, model_type: str = "tree"):
-    """Calcula SHAP values según el tipo de modelo.
-
-    Parameters
-    ----------
-    model : modelo entrenado
-    X : datos de entrada
-    model_type : 'tree' para RF/XGBoost, 'kernel' para otros
-
-    Returns
-    -------
-    shap.Explanation
-    """
     if model_type == "tree":
         explainer = shap.TreeExplainer(model)
     else:
