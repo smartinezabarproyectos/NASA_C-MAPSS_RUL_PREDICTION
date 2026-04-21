@@ -1,100 +1,269 @@
-import numpy as np
+"""
+Preprocessor — NASA C-MAPSS
+Limpieza, normalizacion por condicion operacional, calculo de RUL
+y scaling de features.
+"""
+
+import sys
+from pathlib import Path
+
+ROOT = str(Path(__file__).resolve().parent.parent)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 import pandas as pd
+import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-from src.config import (
-    MAX_RUL,
-    CLASSIFICATION_W,
-    DROP_SENSORS,
-    DROP_SETTINGS,
-    USEFUL_SENSORS,
-)
+from src.config import (DROP_SENSORS, USEFUL_SENSORS,
+                        MAX_RUL, CLASSIFICATION_W)
 
 
-def add_rul_column(df: pd.DataFrame) -> pd.DataFrame:
-
-    df = df.copy()
-    max_cycles = df.groupby("unit_id")["cycle"].transform("max")
-    df["rul"] = (max_cycles - df["cycle"]).clip(upper=MAX_RUL)
-    return df
-
-
-def add_binary_label(df: pd.DataFrame, w: int = CLASSIFICATION_W) -> pd.DataFrame:
-
-    df = df.copy()
-    df["label"] = (df["rul"] <= w).astype(int)
-    return df
-
-
-def drop_useless_columns(df: pd.DataFrame) -> pd.DataFrame:
-
-    cols_to_drop = [c for c in DROP_SENSORS + DROP_SETTINGS if c in df.columns]
-    return df.drop(columns=cols_to_drop)
-
-
-def normalize_sensors(
-    train_df: pd.DataFrame,
-    test_df: pd.DataFrame | None = None,
-) -> tuple[pd.DataFrame, pd.DataFrame | None, MinMaxScaler]:
-    """Normaliza sensores con MinMaxScaler ajustado en train.
-
-    Returns
-    -------
-    train_norm, test_norm (o None), scaler
+class Preprocessor:
     """
-    scaler = MinMaxScaler()
-    sensor_cols = [c for c in USEFUL_SENSORS if c in train_df.columns]
+    Transforma los datos crudos de NASA C-MAPSS en datos limpios
+    y normalizados listos para el modelado.
 
-    train_out = train_df.copy()
-    train_out[sensor_cols] = scaler.fit_transform(train_df[sensor_cols])
-
-    test_out = None
-    if test_df is not None:
-        test_out = test_df.copy()
-        test_out[sensor_cols] = scaler.transform(test_df[sensor_cols])
-
-    return train_out, test_out, scaler
-
-
-def preprocess_train(df: pd.DataFrame) -> pd.DataFrame:
-    """Pipeline completo de preprocesamiento para train."""
-    df = add_rul_column(df)
-    df = add_binary_label(df)
-    df = drop_useless_columns(df)
-    return df
-
-
-def preprocess_test(
-    test_df: pd.DataFrame,
-    rul_series: pd.Series,
-) -> pd.DataFrame:
-    """Pipeline de preprocesamiento para test.
-
-    Usa solo el último ciclo de cada motor y agrega el RUL real.
+    Attributes
+    ----------
+    max_rul : int
+        Techo del RUL para el modelo piece-wise lineal.
+    classification_w : int
+        Umbral en ciclos para el label binario de clasificacion.
+    scaler : MinMaxScaler
+        Scaler ajustado sobre los datos de entrenamiento.
+    feature_cols : list
+        Columnas de features usadas para el scaling.
     """
-    test_df = drop_useless_columns(test_df)
 
-    # Último ciclo de cada motor
-    last_cycle = test_df.groupby("unit_id").last().reset_index()
-    last_cycle["rul"] = rul_series.values
-    last_cycle["label"] = (last_cycle["rul"] <= CLASSIFICATION_W).astype(int)
+    def __init__(self, max_rul: int = MAX_RUL,
+                 classification_w: int = CLASSIFICATION_W):
+        self.max_rul          = max_rul
+        self.classification_w = classification_w
+        self.scaler           = MinMaxScaler()
+        self.feature_cols     = []
 
-    return last_cycle
+    def drop_useless_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Elimina los sensores constantes y op_setting_3.
+
+        Los sensores en DROP_SENSORS tienen varianza < 0.001 en todos
+        los sub-datasets y no aportan informacion para detectar degradacion.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame con las 26 columnas originales.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame con 19 columnas utiles.
+        """
+        cols_to_drop = DROP_SENSORS + ["op_setting_3"]
+        return df.drop(
+            columns=[c for c in cols_to_drop if c in df.columns]
+        )
+
+    def compute_rul(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calcula el target de regresion RUL con cap de max_rul ciclos.
+
+        Para cada motor busca su ciclo maximo, resta el ciclo actual
+        y aplica el techo (piece-wise linear model).
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame de entrenamiento con columnas unit_id y cycle.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame con columna 'rul' agregada.
+        """
+        df = df.copy()
+        max_cycle = df.groupby("unit_id")["cycle"].transform("max")
+        df["rul"] = (max_cycle - df["cycle"]).clip(upper=self.max_rul)
+        return df
+
+    def compute_binary_label(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Crea el target de clasificacion binaria.
+
+        Asigna 1 si RUL <= classification_w (motor critico),
+        0 si no (motor normal).
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame con columna 'rul' ya calculada.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame con columna 'label' agregada.
+        """
+        df = df.copy()
+        df["label"] = (df["rul"] <= self.classification_w).astype(int)
+        return df
+
+    def normalize_by_operating_condition(self,
+                                          df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Normaliza sensores dentro de cada cluster de condicion operacional.
+
+        Aplica z-score normalization por grupo de (op_setting_1, op_setting_2).
+        Critico para FD002 y FD004 donde hay 6 condiciones distintas.
+        Sin esto el modelo confunde cambios de condicion con degradacion.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame con columnas de sensores y op_settings.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame con sensores normalizados por condicion.
+        """
+        df = df.copy()
+        sensor_cols = [c for c in df.columns if c.startswith("sensor_")]
+        condition_cols = ["op_setting_1", "op_setting_2"]
+        conditions = df[condition_cols].drop_duplicates()
+
+        for _, cond in conditions.iterrows():
+            mask = (
+                (df["op_setting_1"] == cond["op_setting_1"]) &
+                (df["op_setting_2"] == cond["op_setting_2"])
+            )
+            subset = df[mask]
+            for col in sensor_cols:
+                mean = subset[col].mean()
+                std  = subset[col].std()
+                if std > 0:
+                    df.loc[mask, col] = (df.loc[mask, col] - mean) / std
+
+        return df
+
+    def fit_scaler(self, train_df: pd.DataFrame,
+                   feature_cols: list) -> "Preprocessor":
+        """
+        Ajusta el MinMaxScaler sobre los datos de entrenamiento.
+
+        Solo debe llamarse con datos de train para evitar data leakage.
+
+        Parameters
+        ----------
+        train_df : pd.DataFrame
+            DataFrame de entrenamiento.
+        feature_cols : list
+            Columnas a escalar.
+
+        Returns
+        -------
+        Preprocessor
+            La misma instancia para encadenamiento.
+        """
+        self.feature_cols = feature_cols
+        self.scaler.fit(train_df[feature_cols])
+        return self
+
+    def apply_scaler(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Aplica el scaler ya ajustado a un DataFrame.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame a escalar (train o test).
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame con features escaladas a [0, 1].
+        """
+        df = df.copy()
+        df[self.feature_cols] = self.scaler.transform(df[self.feature_cols])
+        return df
+
+    def process_train(self, df: pd.DataFrame,
+                      ds_id: str = "FD001") -> pd.DataFrame:
+        """
+        Pipeline completo de preprocesamiento para datos de entrenamiento.
+
+        Aplica en orden: drop columnas, RUL, label binario,
+        normalizacion por condicion (si aplica) y scaling.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame de entrenamiento crudo.
+        ds_id : str
+            ID del sub-dataset para decidir si normalizar por condicion.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame procesado listo para feature engineering.
+        """
+        df = self.drop_useless_columns(df)
+        df = self.compute_rul(df)
+        df = self.compute_binary_label(df)
+        if ds_id in ["FD002", "FD004"]:
+            df = self.normalize_by_operating_condition(df)
+        return df
+
+    def process_test(self, df: pd.DataFrame,
+                     ds_id: str = "FD001") -> pd.DataFrame:
+        """
+        Pipeline de preprocesamiento para datos de test.
+
+        No calcula RUL (viene del archivo RUL_FDxxx.txt).
+        Aplica las mismas transformaciones que train excepto RUL/label.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame de test crudo.
+        ds_id : str
+            ID del sub-dataset.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame de test procesado.
+        """
+        df = self.drop_useless_columns(df)
+        if ds_id in ["FD002", "FD004"]:
+            df = self.normalize_by_operating_condition(df)
+        return df
 
 
-def normalize_by_operating_condition(df: pd.DataFrame, op_cols=None) -> pd.DataFrame:
-    if op_cols is None:
-        op_cols = ["op_setting_1", "op_setting_2"]
+# Funciones de compatibilidad para codigo existente
+def drop_useless_columns(df):
+    return Preprocessor().drop_useless_columns(df)
 
-    df = df.copy()
-    sensor_cols = [c for c in df.columns if c.startswith("sensor_")]
+def add_rul_column(df, max_rul=MAX_RUL):
+    return Preprocessor(max_rul=max_rul).compute_rul(df)
 
-    df["op_cluster"] = df[op_cols].round(2).astype(str).agg("_".join, axis=1)
+def add_binary_label(df, w=CLASSIFICATION_W):
+    return Preprocessor(classification_w=w).compute_binary_label(df)
 
-    for col in sensor_cols:
-        group_mean = df.groupby("op_cluster")[col].transform("mean")
-        group_std = df.groupby("op_cluster")[col].transform("std").replace(0, 1)
-        df[col] = (df[col] - group_mean) / group_std
+def normalize_by_operating_condition(df):
+    return Preprocessor().normalize_by_operating_condition(df)
 
-    df = df.drop(columns=["op_cluster"])
-    return df
+
+if __name__ == "__main__":
+    from src.data_loader import DataLoader
+    from src.config import DATASETS
+
+    loader = DataLoader()
+    loader.load_all()
+    prep   = Preprocessor()
+
+    for ds_id in DATASETS:
+        train, test, rul = loader.data[ds_id]
+        train_proc = prep.process_train(train, ds_id)
+        test_proc  = prep.process_test(test, ds_id)
+        print(f"{ds_id} — train: {train_proc.shape}, test: {test_proc.shape}")
